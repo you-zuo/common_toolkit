@@ -13,8 +13,9 @@ enum ImageLoadType { assets, net, loading, fail, file }
 
 const String defaultImageIcon = 'assets/no-image.png'; // default image
 
-class LoadImage extends StatelessWidget {
-  LoadImage(this.image, {
+class LoadImage extends StatefulWidget {
+  LoadImage(
+    this.image, {
     super.key,
     this.width,
     this.height,
@@ -42,37 +43,45 @@ class LoadImage extends StatelessWidget {
   final bool gaplessPlayback;
   final bool enableMemoryCache;
 
+  @override
+  State<LoadImage> createState() => _LoadImageState();
+}
+
+class _LoadImageState extends State<LoadImage> {
   int? cacheWidth;
 
   int? cacheHeight;
+
   ImageLoadType imageLoadType = ImageLoadType.loading;
+
   bool isSvg = false;
 
   void initCache() {
-    if (width != null) {
-      if (width! < 0) {
-        width = 0;
+    if (widget.width != null) {
+      if (widget.width! < 0) {
+        widget.width = 0;
       }
     }
-    if (height != null) {
-      if (height! < 0) {
-        height = 0;
+    if (widget.height != null) {
+      if (widget.height! < 0) {
+        widget.height = 0;
       }
     }
   }
 
   Future<void> initImageType() async {
-    if (image == null || image!.isEmpty || image == 'null') {
+    if (widget.image == null || widget.image!.isEmpty || widget.image == 'null') {
       imageLoadType = ImageLoadType.loading;
     } else {
-      if (_isNetworkImage(image!)) {
+      if (_isNetworkImage(widget.image!)) {
         imageLoadType = ImageLoadType.net;
-      } else if (_isAssetImage(image!)) {
+      } else if (_isAssetImage(widget.image!)) {
         imageLoadType = ImageLoadType.assets;
-      } else if (_isFileImage(image!)) {
+      } else if (_isFileImage(widget.image!)) {
         imageLoadType = ImageLoadType.file;
       }
     }
+    setState(() {});
   }
 
   bool _isNetworkImage(String url) {
@@ -87,122 +96,128 @@ class LoadImage extends StatelessWidget {
     return File(url).existsSync();
   }
 
+  @override
+  void initState() {
+    super.initState();
+    initImageType();
+  }
+
   Widget _imgWidget() {
     switch (imageLoadType) {
       case ImageLoadType.file:
         if (isSvg) {
-          File file = File(image!);
+          File file = File(widget.image!);
 
           return svg.SvgPicture.string(
             file.readAsStringSync(),
-            width: width?.abs(),
-            height: height?.abs(),
-            fit: fit,
-            alignment: alignment,
+            width: widget.width?.abs(),
+            height: widget.height?.abs(),
+            fit: widget.fit,
+            alignment: widget.alignment,
           );
         }
 
         if (kIsWeb) {
           return ExtendedImage.network(
-            image!,
-            width: width?.abs(),
-            height: height?.abs(),
-            fit: fit,
-            shape: shape,
-            color: color,
+            widget.image!,
+            width: widget.width?.abs(),
+            height: widget.height?.abs(),
+            fit: widget.fit,
+            shape: widget.shape,
+            color: widget.color,
             cacheWidth: cacheWidth,
-            border: border,
+            border: widget.border,
             cacheHeight: cacheHeight,
-            alignment: alignment,
-            borderRadius: borderRadius,
-            gaplessPlayback: gaplessPlayback,
-            clearMemoryCacheWhenDispose: enableMemoryCache,
+            alignment: widget.alignment,
+            borderRadius: widget.borderRadius,
+            gaplessPlayback: widget.gaplessPlayback,
+            clearMemoryCacheWhenDispose: widget.enableMemoryCache,
             loadStateChanged: (ExtendedImageState state) => _loadStateChanged(state),
           );
         } else {
           return ExtendedImage.file(
-            File(image!),
-            width: width?.abs(),
-            height: height?.abs(),
-            fit: fit,
-            shape: shape,
-            border: border,
-            color: color,
+            File(widget.image!),
+            width: widget.width?.abs(),
+            height: widget.height?.abs(),
+            fit: widget.fit,
+            shape: widget.shape,
+            border: widget.border,
+            color: widget.color,
             cacheWidth: cacheWidth,
             cacheHeight: cacheHeight,
-            alignment: alignment,
-            borderRadius: borderRadius,
-            gaplessPlayback: gaplessPlayback,
-            clearMemoryCacheWhenDispose: enableMemoryCache,
+            alignment: widget.alignment,
+            borderRadius: widget.borderRadius,
+            gaplessPlayback: widget.gaplessPlayback,
+            clearMemoryCacheWhenDispose: widget.enableMemoryCache,
             loadStateChanged: (ExtendedImageState state) => _loadStateChanged(state),
           );
         }
       case ImageLoadType.assets:
         if (isSvg) {
           return svg.SvgPicture.asset(
-            image ?? '',
-            width: width?.abs(),
-            height: height?.abs(),
-            fit: fit,
-            alignment: alignment,
+            widget.image ?? '',
+            width: widget.width?.abs(),
+            height: widget.height?.abs(),
+            fit: widget.fit,
+            alignment: widget.alignment,
           );
         }
         return ExtendedImage.asset(
-          image ?? '',
-          width: width?.abs(),
-          height: height?.abs(),
-          fit: fit,
-          border: border,
-          shape: shape,
-          color: color,
+          widget.image ?? '',
+          width: widget.width?.abs(),
+          height: widget.height?.abs(),
+          fit: widget.fit,
+          border: widget.border,
+          shape: widget.shape,
+          color: widget.color,
           cacheWidth: cacheWidth,
           cacheHeight: cacheHeight,
-          alignment: alignment,
-          borderRadius: borderRadius,
-          gaplessPlayback: gaplessPlayback,
-          clearMemoryCacheWhenDispose: enableMemoryCache,
+          alignment: widget.alignment,
+          borderRadius: widget.borderRadius,
+          gaplessPlayback: widget.gaplessPlayback,
+          clearMemoryCacheWhenDispose: widget.enableMemoryCache,
           loadStateChanged: (ExtendedImageState state) => _loadStateChanged(state),
         );
 
       case ImageLoadType.net:
         if (isSvg) {
           return svg.SvgPicture.network(
-            image ?? '',
-            width: width?.abs(),
-            height: height?.abs(),
-            fit: fit,
-            alignment: alignment,
+            widget.image ?? '',
+            width: widget.width?.abs(),
+            height: widget.height?.abs(),
+            fit: widget.fit,
+            alignment: widget.alignment,
           );
         }
         return ExtendedImage.network(
-          '${image}',
-          width: width,
-          height: height,
-          fit: fit,
-          border: border,
-          shape: shape,
-          borderRadius: borderRadius,
-          gaplessPlayback: gaplessPlayback,
+          '${widget.image}',
+          width: widget.width,
+          height: widget.height,
+          fit: widget.fit,
+          border: widget.border,
+          shape: widget.shape,
+          borderRadius: widget.borderRadius,
+          gaplessPlayback: widget.gaplessPlayback,
           handleLoadingProgress: true,
           printError: false,
-          clearMemoryCacheWhenDispose: enableMemoryCache,
+          clearMemoryCacheWhenDispose: widget.enableMemoryCache,
           loadStateChanged: (ExtendedImageState state) => _loadStateChanged(state),
         );
       case ImageLoadType.loading:
         return ExtendedImage.asset(
-          defaultIcon,
+          widget.defaultIcon,
           fit: BoxFit.scaleDown,
-          color: color,
-          width: width,
-          border: border,
-          height: height,
+          color: widget.color,
+          width: widget.width,
+          border: widget.border,
+          height: widget.height,
           cacheWidth: cacheWidth,
-          borderRadius: borderRadius,
+          borderRadius: widget.borderRadius,
           cacheHeight: cacheHeight,
-          shape: shape,
-          package: defaultIcon != 'assets/no-image.png' ? null : 'common_toolkit',
+          shape: widget.shape,
+          package: widget.defaultIcon != 'assets/no-image.png' ? null : 'common_toolkit',
           gaplessPlayback: true,
-          clearMemoryCacheWhenDispose: enableMemoryCache,
+          clearMemoryCacheWhenDispose: widget.enableMemoryCache,
           loadStateChanged: (ExtendedImageState state) => _loadStateChanged(state),
         );
 
@@ -213,8 +228,7 @@ class LoadImage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    initImageType();
-    return SizedBox(key: ValueKey(image), child: _imgWidget());
+    return SizedBox(key: ValueKey(widget.image), child: _imgWidget());
   }
 
   Widget _loadStateChanged(ExtendedImageState state) {
@@ -229,35 +243,35 @@ class LoadImage extends StatelessWidget {
   }
 
   Widget _buildDefaultImage() {
-    if (defaultIcon.contains('http')) {
+    if (widget.defaultIcon.contains('http')) {
       return ExtendedImage.network(
-        defaultIcon,
+        widget.defaultIcon,
         fit: BoxFit.scaleDown,
         cacheWidth: cacheWidth,
         cacheHeight: cacheHeight,
-        width: width,
-        border: border,
-        height: height,
-        color: color,
-        borderRadius: borderRadius,
-        shape: shape,
-        gaplessPlayback: gaplessPlayback,
-        clearMemoryCacheWhenDispose: enableMemoryCache,
+        width: widget.width,
+        border: widget.border,
+        height: widget.height,
+        color: widget.color,
+        borderRadius: widget.borderRadius,
+        shape: widget.shape,
+        gaplessPlayback: widget.gaplessPlayback,
+        clearMemoryCacheWhenDispose: widget.enableMemoryCache,
       );
     }
     return ExtendedImage.asset(
-      defaultIcon ?? '',
+      widget.defaultIcon ?? '',
       fit: BoxFit.scaleDown,
-      color: color,
+      color: widget.color,
       cacheWidth: cacheWidth,
       cacheHeight: cacheHeight,
-      width: width,
-      height: height,
-      borderRadius: borderRadius,
-      shape: shape,
-      border: border,
-      gaplessPlayback: gaplessPlayback,
-      clearMemoryCacheWhenDispose: enableMemoryCache,
+      width: widget.width,
+      height: widget.height,
+      borderRadius: widget.borderRadius,
+      shape: widget.shape,
+      border: widget.border,
+      gaplessPlayback: widget.gaplessPlayback,
+      clearMemoryCacheWhenDispose: widget.enableMemoryCache,
       loadStateChanged: (ExtendedImageState state) {
         switch (state.extendedImageLoadState) {
           case LoadState.loading:
@@ -268,20 +282,20 @@ class LoadImage extends StatelessWidget {
             return ExtendedImage.asset(
               defaultImageIcon,
               fit: BoxFit.scaleDown,
-              color: color,
+              color: widget.color,
               cacheWidth: cacheWidth,
               cacheHeight: cacheHeight,
-              width: width,
-              border: border,
-              height: height,
+              width: widget.width,
+              border: widget.border,
+              height: widget.height,
               package: 'common_toolkit',
-              borderRadius: borderRadius,
-              shape: shape,
-              gaplessPlayback: gaplessPlayback,
-              clearMemoryCacheWhenDispose: enableMemoryCache,
+              borderRadius: widget.borderRadius,
+              shape: widget.shape,
+              gaplessPlayback: widget.gaplessPlayback,
+              clearMemoryCacheWhenDispose: widget.enableMemoryCache,
             );
         }
       },
     );
-  } //nof
+  }
 }
